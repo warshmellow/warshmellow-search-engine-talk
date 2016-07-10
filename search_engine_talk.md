@@ -40,7 +40,7 @@ Now, you may argue that the mapping `{"barks": 0}` was implicit in the previous 
 This is the `Bag of Words` representation of text.
 
 
-### Term Frequency Vectorization of Bag of Words (Term Frequency vector)
+### Term Frequency Vectorization of Bag of Words
 
 If we take into account the length of the document we can normalize the documents, taking only into account the relative frequency of words in a document. The `length` of `doc1` is 12. Dividing each count by 12, we get
 
@@ -70,6 +70,24 @@ Considering each document in isolation doesn't keep track of the global importan
 Constructing a vocabulary may or may not be an expensive operation. Another vectorization which uses the so-called `Hashing Trick` does not require construction of a vocabulary.
 
 ### Another Vectorization: Hashing Trick vectors
+Instead of mapping a document to its word frequencies, we can map it to a sparse `bitset` in a sufficiently large space. This method bypasses the need to construct the vocabulary, and can handle what would have amounted to a large unknown and frequently changing vocabulary.
+
+Take `b=24` for example. We can map a document to a `2 ** b = 2 ** 24` length sparse bitset. Why such a large space? The space should be large enough to capture all the interactions between the words in the document while still giving a flat data structure.
+
+The `Hashing Trick` makes use of a hash function to determine the representation.
+
+    def toHashVector(String doc, int b):
+        termFrequencyVector = term frequency vector of doc
+
+        resultLength = 2 ** b
+        result = new Bitset of all 0 of length resultLength
+
+        for each nonzero entry (word, freq) in termFrequencyVector:
+            idx = hash((word, freq)) mod resultLength
+            result.flip(idx)
+
+        return result
+
 
 ### Another Vectorization: word2vec
 
