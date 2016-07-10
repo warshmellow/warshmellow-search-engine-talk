@@ -65,7 +65,9 @@ have the same representation.
 
 Consider the document `doc2 = "the dog barks"` again. Note that for the bunch of documents `doc1, doc2` we did not need to construct a `vocabulary`, a set of all words in all documents in the bunch. We considered each document alone to build this representation. As a mathematical vector, we can consider it a `sparse vector`, where we only hold "non-zero" information.
 
-Considering each document in isolation doesn't keep track of the global importance of a word. For example, "the" appears in both documents and it may seem important because the relative frequency is so high. But at a global level, since it appears at relatively frequency in both documents, we may consider it less important. To mathematically encode this global frequency information, we move to the `Term Frequency - Inverse Document Frequency (TF-IDF)` representation. This requires constructing a vocabulary.
+### Term Frequency - Inverse Document Frequency (TF-IDF): Term Frequency Vectorization with Global Scaling
+
+Considering each document in isolation doesn't keep track of the global importance of a word. For example, "the" appears in both documents and it may seem important because the relative frequency is so high. But at a global level, since it appears at high relatively frequency in both documents, we may consider it less important. To mathematically encode this global frequency information, we move to the `Term Frequency - Inverse Document Frequency (TF-IDF)` representation. This requires constructing a vocabulary and inverse document mapping.
 
 Constructing a vocabulary may or may not be an expensive operation. Another vectorization which uses the so-called `Hashing Trick` does not require construction of a vocabulary.
 
@@ -88,11 +90,25 @@ The `Hashing Trick` makes use of a hash function to determine the representation
 
         return result
 
+Note that the features are not interpretable, whereas the term frequency vector features are exactly the word frequencies of each word.
 
 ### Another Vectorization: word2vec
+Another representation of word documents, called `word2vec` maps documents to a space where arithmetic `(+, -)` "makes sense". Roughly speaking, we fix a small integer length such as `300` and we map documents to vectors of real numbers of length 300. This representation is achieved by doing deep learning on documents, so the machine can find latent relationships between words in documents. The features in the vector are not interpretable.
+
+This representation can track latent relationships between words, and the notion of closeness, as calculated below, can be much finer.
 
 ## Closeness in Vectorization: Cosine similarity
 
+Consider two unit length vectors `u = (ux, uy)`, `v=(vx, vy)` in xy-coordinates. Then the formula holds `cos(t) = u . v`, where `.` is the dot product. In this case, `u . v = ux * vx + uy * vy`. The angle t is set between 0 and 90 degrees. Two documents are identical if t is 0, and totally dissimilar if t is 90. We set the `cosine similarity sim(u, v) = cos(t) = u . v`. This number is between 0 and 1 and has the correspondence of `0 degrees: similarity 1` and `90 degrees: similarity 0`.
+
+Let's we consider for example that the x-axis is word frequency of "cat", and the y-axis is for "dog". We take several documents:
+
+    doc1 = "cat dog"
+    doc2 = "dog cat"
+    doc3 = "dog"
+    doc4 = "cat"
+
+Let's abuse notation and we find that `sim(doc1, doc2) = 1` because the words are the same, and that `sim(doc3, doc4) = 0` because they share no words.
 
 ## The Basic Search Engine
 ### The document model
