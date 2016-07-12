@@ -71,7 +71,12 @@ Considering each document in isolation doesn't keep track of the global importan
 
 Constructing a vocabulary may or may not be an expensive operation. Another vectorization which uses the so-called `Hashing Trick` does not require construction of a vocabulary.
 
-### Another Vectorization: Hashing Trick vectors
+Each vector in `TF-IDF` representation is normalized by length and consists of features, for each word w, `tf_idf(w) = term frequency of w * inverse document frequency of w = tf(w) * idf(w)`. The term frequency is computed above. The inverse document frequency `idf(w)` is given by `log ((total number of documents) / (1 + number of documents containing w))`. Note that this is a number global over an entire bunch of documents. The `1+` is just so you don't divide by 0, and note this number doesn't make sense if you have no documents.
+
+#### Exercise
+Take ten text documents and compute the `idf(w)` for each word w. Then compute the vector representations of each document.
+
+### (Optional) Another Vectorization: Hashing Trick vectors
 Instead of mapping a document to its word frequencies, we can map it to a sparse `bitset` in a sufficiently large space. This method bypasses the need to construct the vocabulary, and can handle what would have amounted to a large unknown and frequently changing vocabulary.
 
 Take `b=24` for example. We can map a document to a `2 ** b = 2 ** 24` length sparse bitset. Why such a large space? The space should be large enough to capture all the interactions between the words in the document while still giving a flat data structure.
@@ -92,10 +97,22 @@ The `Hashing Trick` makes use of a hash function to determine the representation
 
 Note that the features are not interpretable, whereas the term frequency vector features are exactly the word frequencies of each word.
 
-### Another Vectorization: word2vec
+#### Exercise
+Use the language of your choice. Find a sparse(!) bit vector implementation and implement this hashing trick. Do NOT instantiate a boolean array of length 2 ** 24.
+
+#### Exercise
+Assume your hash function meets the Uniform Hashing Assumption (i.e., roughly all possible output from your input is uniformly distributed under the hash function). Does the hash vector also meet this a similar uniform distribution assumption?
+
+### (Optional) Another Vectorization: word2vec
 Another representation of word documents, called `word2vec` maps documents to a space where arithmetic `(+, -)` "makes sense". Roughly speaking, we fix a small integer length such as `300` and we map documents to vectors of real numbers of length 300. This representation is achieved by doing deep learning on documents, so the machine can find latent relationships between words in documents. The features in the vector are not interpretable.
 
 This representation can track latent relationships between words, and the notion of closeness, as calculated below, can be much finer.
+
+#### Exercise
+Look at the papers and/or source code for the original implementation out of Google
+https://code.google.com/archive/p/word2vec/ .
+If you know Apache Spark or Python, try out a demo for an implementation in Spark MLlib or gensim, both open source.
+
 
 ## Closeness in Vectorization: Cosine similarity
 
@@ -109,6 +126,9 @@ Let's we consider for example that the x-axis is word frequency of "cat", and th
     doc4 = "cat"
 
 Let's abuse notation and we find that `sim(doc1, doc2) = 1` because the words are the same, and that `sim(doc3, doc4) = 0` because they share no words.
+
+#### Exercise
+Implement cosine similarity on your favorite vectorization.
 
 ## The Basic Search Engine
 ### The document model
@@ -125,10 +145,30 @@ Let's abuse notation and we find that `sim(doc1, doc2) = 1` because the words ar
 ## Vector closeness and Elasticsearch "Relevance" score
 
 ## Clustering, a classic machine learning problem
+Suppose you have many documents and you have settled on a vectorization that is appropriate. Recall that Elasticsearch by default uses TF-IDF vectorization.
+
+In our case, we may have documents containing information on people. Each document contains date of birth, name, and favorite books. For simplicity, we can take each document as a giant text string. For example, we have `doc1 = "1990-01-01 warshmellow 'I am a cat' 'Ten Nights of Dreams'"` and `doc2 = "1975-01-01 chocolatebunny 'Fun Home' 'The Odyssey'""`.
+
+Let's say we have 1000 such. We want to see if they form natural clusters. Maybe 10 natural clusters. This is called a `clustering` problem. Another name for this problem is called `market segmentation`. Another name is `unsupervised learning in machine learning`.
+
 ### k-means
+The simplest form of clustering has you fix `k` number of clusters you think there will be, then calculating cosine similarities between vectors. There will be `k` clusters in the end, hopefully all the points in a cluster will have very high cosine similarities, and points in two different clusters will have low cosine similarities. You try different `k` to optimize for this simultaneous condition.
 
 ### Expectation maximization and Gaussian Mixture as a smooth k-means
+For a variety of mathematical reasons, `k-means` sometimes gives you bad results because it is too "rigid". Roughly speaking, it imagines all clusters to be non-overlapping "circles", and you can split hairs over which circle a point belongs to.
+
+A "smooth" version of k-means allows clusters to be ellipses and allows points to belong to different ellipses with varying degree of belonging.
+
+Framing a problem this way is called a `Gaussian mixture` problem: it assumes there are `k` normal distributions that all points belong to with a certain probability.
+
+The `Expectation maximization` algorithm is used to compute these probabilities.
 
 ### Topic Modeling, a form of "soft clustering"
+
+The above methods are somewhat "hard" clustering because they explicitly use similarity to compute shapes and boundaries.
+
+Another way is "soft clustering", which uses "latent" or hidden information to compute clusters.
+
+If you assume all vectors are linear vectors, then you can extract linear "latent" information using matrix methods.
 
 ## Anomaly Detection, a variant of Clustering
