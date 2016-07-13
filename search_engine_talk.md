@@ -76,6 +76,11 @@ Each vector in `TF-IDF` representation is normalized by length and consists of f
 #### Exercise
 Take ten text documents and compute the `idf(w)` for each word w. Then compute the vector representations of each document.
 
+#### Exercise
+Think about how you would handle text for which there are no spaces or delimiters. This is the first sentence from Japanese Wikipedia's article on Japan.
+
+日本国（にっぽんこく、にほんこく）、または日本（にっぽん、にほん）は、東アジアに位置する日本列島（北海道・本州・四国・九州の主要四島およびそれに付随する島々）及び、南西諸島・小笠原諸島などの諸島嶼から成る島国である[1]。日本語が事実上の公用語として使用されている。首都は事実上東京都とされている。
+
 ### (Optional) Another Vectorization: Hashing Trick vectors
 Instead of mapping a document to its word frequencies, we can map it to a sparse `bitset` in a sufficiently large space. This method bypasses the need to construct the vocabulary, and can handle what would have amounted to a large unknown and frequently changing vocabulary.
 
@@ -132,17 +137,47 @@ Implement cosine similarity on your favorite vectorization.
 
 ## The Basic Search Engine
 ### The document model
+For simplicity, a (text) `document` is uniquely identified by a string called `doc_id` and is a sparse TF-IDF representation of the text.
+
+#### Exercise
+How is this different from a relational model? How would you store the hashing trick or word2vec representations under the document model?
 
 ### Boolean Query
+We focus on queries that return sets of document ids containing or not containing certain words. Set operations can be decomposed into one of three (or two) operations:
+
+    and(word1, word2) = all docs with word1 and word2
+    or(word1, word2) = all docs with word1 or word2
+    withAndNot(includedWord, excludedWord) =
+        all docs with includedWord but without excludedWord
+
+#### Exercise
+Given `or(word1, word2)` and `withAndNot(includedWord, excludedWord)`, implement `and(word1, word2)`.
 
 ### Inverted Index Data Structure
 
+We want a data structure that will support fast lookups by word of all documents containing that word and set operations intersection, union, and negation.
+
+One data structure we can use for this is an `inverted index`.
+
+We have a key value data structure. Keys are words. Values are sets of all documents containing the word. Intersection, Union, and Negation can be done in time proportional to size of the sets. Lookups by word are constant or log time.
+
+#### Exercise
+Implement an inverted index with the following interface.
+
+    InvertedIndex
+        InvertedIndex(list of documents)
+        boolean isInIndex(word)
+        Set of doc ids and(word1, word2)
+        Set of doc ids or(word1, word2)
+        Set of doc ids withAndNot(includedWord, excludedWord)
+
+
+
 ## The Elasticsearch (Lucene) document model
-
-### What about JOINS?
-
+Flat documents of strings, numbers, bools and arrays of such.
 
 ## Vector closeness and Elasticsearch "Relevance" score
+
 
 ## Clustering, a classic machine learning problem
 Suppose you have many documents and you have settled on a vectorization that is appropriate. Recall that Elasticsearch by default uses TF-IDF vectorization.
