@@ -65,7 +65,7 @@ have the same representation.
 
 Consider the document `doc2 = "the dog barks"` again. Note that for the bunch of documents `doc1, doc2` we did not need to construct a `vocabulary`, a set of all words in all documents in the bunch. We considered each document alone to build this representation. As a mathematical vector, we can consider it a `sparse vector`, where we only hold "non-zero" information.
 
-### Term Frequency - Inverse Document Frequency (TF-IDF): Term Frequency Vectorization with Global Scaling
+### Term Frequency - Inverse Document Frequency (TF-IDF): Term Frequency Vectorization with Global Rarity Scaling
 
 Considering each document in isolation doesn't keep track of the global importance of a word. For example, "the" appears in both documents and it may seem important because the relative frequency is so high. But at a global level, since it appears at high relatively frequency in both documents, we may consider it less important. To mathematically encode this global frequency information, we move to the `Term Frequency - Inverse Document Frequency (TF-IDF)` representation. This requires constructing a vocabulary and inverse document mapping.
 
@@ -117,7 +117,6 @@ This representation can track latent relationships between words, and the notion
 Look at the papers and/or source code for the original implementation out of Google
 https://code.google.com/archive/p/word2vec/ .
 If you know Apache Spark or Python, try out a demo for an implementation in Spark MLlib or gensim, both open source.
-
 
 ## Closeness in Vectorization: Cosine similarity
 
@@ -174,10 +173,23 @@ Implement an inverted index with the following interface.
 
 
 ## The Elasticsearch (Lucene) document model
-Flat documents of strings, numbers, bools and arrays of such.
+A key-value data structure where keys are strings called `fields` and values are strings, booleans, numbers, another document or arrays of such. When a document value is a string, you may choose how you want to process the text. It is usually processed at a TF-IDF vector as above.
 
-## Vector closeness and Elasticsearch "Relevance" score
+The document is one of several packaged in an `index`, which is analogous to databases in relational databases. There is a `mapping`, which holds schema information. Documents need not conform to this schema, but if they don't their values may not be stored properly.
 
+## Elasticsearch "Relevance" score
+Given a query, what does it mean for a document to be "relevant" or "more relevant" or "less relevant"?
+
+Suppose we have a single word query: "CONTAINS word". One way is to rely on the `TF-IDF(word, doc)` for each word in the query. Recall that this is just the product `term freq of word in doc * inverse document freq of word`. So the higher it is for a fixed word but between two documents, you choose the document with the higher one. This make sense because the document with the higher number , the word is more frequent in it.
+
+If you have several words in your query, you can add the TF-IDF scores for a fixed document across all the words.
+
+What if your query is "CONTAINS word1 AND NOT CONTAINS word2"? Simply filter the document containing word2 out of your result set, no matter how relevant.
+
+It turns out, this is pretty close to simply asking, assuming the query is a document, for the most similar documents, in terms of cosine similarity.
+
+#### Exercise
+Verify this above claim.
 
 ## Clustering, a classic machine learning problem
 Suppose you have many documents and you have settled on a vectorization that is appropriate. Recall that Elasticsearch by default uses TF-IDF vectorization.
