@@ -191,6 +191,8 @@ It turns out, this is pretty close to simply asking, assuming the query is a doc
 #### Exercise
 Verify this above claim.
 
+(cf. https://lucene.apache.org/core/3_5_0/api/core/org/apache/lucene/search/Similarity.html)
+
 ## Clustering, a classic machine learning problem
 Suppose you have many documents and you have settled on a vectorization that is appropriate. Recall that Elasticsearch by default uses TF-IDF vectorization.
 
